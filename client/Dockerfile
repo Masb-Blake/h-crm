@@ -1,0 +1,12 @@
+FROM node:22.14.0
+
+WORKDIR /app
+
+EXPOSE 5173
+
+COPY ./package.json .
+
+RUN npm install
+
+COPY . .
+

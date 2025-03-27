@@ -1,0 +1,51 @@
+services:
+
+  web:
+    build: ./client/ #read Dockerfile from client folder
+    ports:
+      - 5173:5173 #expose ports locally & container
+    command: npm run dev -- --host 0.0.0.0 #launch the process
+    volumes:
+      - ./client/src/:/app/src #map a local folder to the container folder for auto reload
+    depends_on:
+       - backend #share container registries with the backend
+
+  backend:
+    build: 
+      context: ./server/ #read Dockerfile from server folder  
+      target: dev #use the dev tagged docker "build"
+    volumes:
+      - ./server/:/app #map local to container  
+      - /app/tmp #temp folder for air (auto reload in go for services)
+    ports:
+      - 8080:8080 #expose port 
+    command: air #run air 
+
+  db:
+    image: postgres #what unix system to pull down. I think this is debian
+    restart: always 
+    environment:
+      POSTGRES_USER: root #required for the image
+      POSTGRES_PASSWORD: root #required for image
+      POSTGRES_DB: test_db #required for image  
+    ports:
+      - 5432:5432 #port mapping
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data #map container data to local folder for persitence between restart
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - 5050:80
+    depends_on:
+      - db
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  local_pgdata: 
+  pgadmin-data:

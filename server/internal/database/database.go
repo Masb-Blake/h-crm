@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Connect(ctx context.Context) {
+func connect(ctx context.Context) *pgx.Conn {
 	fmt.Println("connecting to DB")
 	osErr := godotenv.Load(".env")
 	if osErr != nil {
@@ -22,14 +22,29 @@ func Connect(ctx context.Context) {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
+	return conn
+}
+
+func QueryDatabase(ctx context.Context, query string, v any) error {
+	conn := connect(ctx)
+
+	err := conn.QueryRow(ctx, query).Scan(v)
 
 	defer conn.Close(ctx)
+	return err
+}
 
-	var greeting string
-	err = conn.QueryRow(ctx, "select 'Hello World!'").Scan(&greeting)
+func Select[T any](ctx context.Context, sel string) ([]T, error) {
+	conn := connect(ctx)
+
+	var value []T
+
+	rows, err := conn.Query(ctx, sel)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Query Row Failed: %v\n", err)
+		return value, err
 	}
 
-	fmt.Println(greeting)
+	values, err := pgx.CollectRows(rows, pgx.RowToStructByName[T])
+
+	return values, err
 }

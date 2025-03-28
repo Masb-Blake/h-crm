@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
-	"github.com/blake-masb/server/internal/database"
 	"github.com/blake-masb/server/internal/routes"
 )
 
@@ -20,9 +18,5 @@ func main() {
 		Addr: addr, Handler: router,
 	}
 
-	database.Connect(context.Background())
-
 	srv.ListenAndServe()
-
-	// Connet to DB
 }

@@ -1,0 +1,22 @@
+{
+    local_certs
+}
+
+crm.localhost {
+    encode gzip
+    reverse_proxy web:5173
+}
+
+crm.api.localhost {
+    reverse_proxy backend:8080
+}
+
+crm.db.localhost {
+    reverse_proxy pgadmin:80 {
+        header_up X-Scheme {scheme}
+        header_up X-Script-Name "/pgadmin4"
+        header_up X-Real-Ip {scheme}
+        header_up X-Forwarded-Proto {scheme}
+        header_up Redirect off
+    }
+}

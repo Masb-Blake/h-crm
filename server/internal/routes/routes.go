@@ -1,62 +1,67 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/blake-masb/server/internal/database"
+	"github.com/blake-masb/server/internal/middleware"
 	"github.com/blake-masb/server/internal/utils"
-	"github.com/blake-masb/server/models/request"
-	"github.com/blake-masb/server/models/response"
+	"github.com/blake-masb/server/models/db"
 	"github.com/gorilla/mux"
 )
 
 func NewRouter() http.Handler {
 	mux := mux.NewRouter()
 
-	mux.HandleFunc("/", indexHandler)
-	mux.HandleFunc("/api/data", apiDataHandler)
-	mux.HandleFunc("/api/test", apiTestHandler)
-	mux.HandleFunc("/api/post", apiPostTest).Methods("post")
-	mux.HandleFunc("/api/postmethod", apiFunction).Methods("post")
-
+	mux.HandleFunc("/ping", pingApi)
+	mux.HandleFunc("/task", createTask).Methods("POST")
+	// mux.HandleFunc("/task", updateTask).Methods("PUT")
+	mux.HandleFunc("/tasks", getTasks).Methods("GET")
+	mux.Use(middleware.EnableCors)
 	return mux
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(w, "Welcome to the ho11111")
+func getTasks(w http.ResponseWriter, r *http.Request) {
+	// No auth or users, get all tasks from db
+
+	type Task struct {
+		Id   string `db:"id"`
+		Name string `db:"name`
+		// Status db.TaskStatus `db:"status`
+	}
+
+	values, err := database.Select[Task](context.Background(), "select * from public.tasks")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to Query Database: %v\n", err)
+	}
+
+	for _, v := range values {
+		fmt.Printf("%s: %s\n", v.Id, v.Name)
+	}
+
+	utils.Encode(w, r, http.StatusOK, values)
 }
 
-func apiDataHandler(w http.ResponseWriter, r *http.Request) {
-	data := "Data"
-	fmt.Println(w, data)
-}
-
-func apiTestHandler(w http.ResponseWriter, r *http.Request) {
-	p := request.Person{Name: "Blake", Age: 90}
+func createTask(w http.ResponseWriter, r *http.Request) {
+	p := db.Todo{Name: "Test", Status: db.NotStarted}
 	err := utils.Encode(w, r, int(http.StatusOK), p)
 	if err != nil {
-		panic("Fuck")
+		panic("Nope")
 	}
 }
 
-func apiPostTest(w http.ResponseWriter, r *http.Request) {
-	decoded, err := utils.Decode[response.PersonResponse](r)
+type ping struct {
+	Test    string `json:"test"`
+	Success bool   `json:"success"`
+}
+
+func pingApi(w http.ResponseWriter, r *http.Request) {
+	resp := ping{Test: "Ping at " + time.Now().Local().GoString(), Success: true}
+	err := utils.Encode(w, r, int(http.StatusOK), resp)
 	if err != nil {
-		panic("Error Decoding")
 	}
-	err = utils.Encode(w, r, int(http.StatusAccepted), decoded)
-}
-
-func apiFunction(w http.ResponseWriter, r *http.Request) {
-	err := utils.DecodeAndRespondFunc(w, r, int(http.StatusCreated), handleDecode)
-	if err != nil {
-		panic("Brokend")
-	}
-}
-
-func handleDecode(create response.PersonResponse) (response.PersonGenerated, error) {
-	fmt.Println("Creating Response")
-	response := response.PersonGenerated{Name: create.Name, Age: create.Age, CreatedAt: time.Now()}
-	return response, nil
 }

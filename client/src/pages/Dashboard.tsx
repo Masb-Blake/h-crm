@@ -1,28 +1,82 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DndContext, closestCorners } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Column } from "@/components/todo/Column";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { v4 as uuidv4 } from "uuid";
 
-const initialTasks = {
+
+interface Todo {
+    id: string,
+    name: string
+}
+
+interface tasks {
+    todo: Todo[],
+    inProgress: Todo[]
+    completed: Todo[]
+}
+
+const initialTasks: tasks = {
     todo: [],
     inProgress: [],
-    completed: [],
-};
+    completed: []
+}
+
 
 export default function TodoDashboard() {
     const [tasks, setTasks] = useState(initialTasks);
     const [newTask, setNewTask] = useState("");
-    const [pingText, setPingText] = useState("");
 
-    const addTask = () => {
+    useEffect(() => {
+        getTasks()
+    }, [])
+
+
+
+    const getTasks = async () => {
+        const response = await fetch("https://crm.api.localhost/tasks", {
+            method: "GET"
+        })
+        if (response.ok) {
+            const json = await response.json()
+            console.log(json, json)
+            initialTasks.todo = JSON.parse(JSON.stringify(json))
+            setTasks({ ...initialTasks, todo: JSON.parse(JSON.stringify(json)) })
+            console.log(tasks)
+        }
+    }
+
+    const addTask = async () => {
         if (newTask.trim()) {
-            setTasks({ ...tasks, todo: [...tasks.todo, { id: Date.now(), text: newTask }] });
-            setNewTask("");
+            const id = uuidv4();
+            const added: Todo = { id: id, name: newTask }
+            setTasks({ ...tasks, todo: [...tasks.todo, added] })
+            setNewTask("")
+            await createNewTask(added)
         }
     };
+
+
+    const createNewTask = async (task: Todo) => {
+        console.log('Creating task: ', task)
+        const response = await fetch("https://crm.api.localhost/task", {
+            method: "POST",
+            body: JSON.stringify(task)
+        });
+
+        if (response.ok) {
+            const json = await response.json();
+            console.log("Generated Id: ", json.id)
+            setTasks({ ...tasks, todo: [...tasks.todo.filter(t => t.id != task.id), { id: json.id, name: json.name }] })
+        }
+        else {
+            console.error("Unable to create task")
+        }
+
+    }
 
     const onDragEnd = (event) => {
         const { active, over } = event;
@@ -38,21 +92,13 @@ export default function TodoDashboard() {
                 [fromColumn]: tasks[fromColumn].filter((t) => t.id !== active.id),
                 [toColumn]: [...tasks[toColumn], task],
             });
+
+            //Update Status
         }
     };
 
-    async function ping(event: MouseEvent<HTMLButtonElement, MouseEvent>): Promise<void> {
 
-        const response = await fetch("https://crm.api.localhost/ping", {
-            method: "GET"
-        })
-        console.log(response)
-        if (response.ok) {
-            const json = await response.json();
-            console.log(json)
-            setPingText(json)
-        }
-    }
+
 
     return (
         <div className="">
@@ -66,7 +112,6 @@ export default function TodoDashboard() {
                             className="bg-gray-800 text-white"
                         />
                         <Button onClick={addTask}>Add Task</Button>
-                        <Button onClick={ping}>Ping Api</Button>
                     </div>
                     <DndContext collisionDetection={closestCorners} onDragEnd={onDragEnd}>
                         <div className="grid grid-cols-3 gap-4">
@@ -82,7 +127,6 @@ export default function TodoDashboard() {
                         </div>
                     </DndContext>
                 </CardContent>
-                <p>{pingText}</p>
             </Card>
         </div>
     );

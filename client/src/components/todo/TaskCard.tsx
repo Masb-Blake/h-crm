@@ -17,7 +17,7 @@ export function TaskCard({ task }) {
             style={style}
             className="bg-gray-700 text-white p-3 rounded-lg cursor-grab"
         >
-            {task.text}
+            {task.name}
         </Card>
     );
 }

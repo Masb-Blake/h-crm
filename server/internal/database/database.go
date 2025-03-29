@@ -34,6 +34,15 @@ func QueryDatabase(ctx context.Context, query string, v any) error {
 	return err
 }
 
+func ExecuteQuery(ctx context.Context, query string, args map[string]any) error {
+	conn := connect(ctx)
+
+	_, err := conn.Exec(ctx, query, args)
+
+	defer conn.Close(ctx)
+	return err
+}
+
 func Select[T any](ctx context.Context, sel string) ([]T, error) {
 	conn := connect(ctx)
 

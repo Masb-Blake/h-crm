@@ -10,8 +10,8 @@ import (
 	"github.com/blake-masb/server/internal/database"
 	"github.com/blake-masb/server/internal/middleware"
 	"github.com/blake-masb/server/internal/utils"
-	"github.com/blake-masb/server/models/db"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func NewRouter() http.Handler {
@@ -25,32 +25,53 @@ func NewRouter() http.Handler {
 	return mux
 }
 
+type Task struct {
+	Id   pgtype.UUID `db:"id"`
+	Name string      `db:"name"`
+	// Status db.TaskStatus `db:"status`
+}
+type RetTask struct {
+	Id   pgtype.UUID `json:"id"`
+	Name string      `json:"name"`
+}
+
 func getTasks(w http.ResponseWriter, r *http.Request) {
 	// No auth or users, get all tasks from db
-
-	type Task struct {
-		Id   string `db:"id"`
-		Name string `db:"name`
-		// Status db.TaskStatus `db:"status`
-	}
 
 	values, err := database.Select[Task](context.Background(), "select * from public.tasks")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to Query Database: %v\n", err)
 	}
 
+	vals := make([]RetTask, len(values)-1)
 	for _, v := range values {
+		nt := RetTask{Id: v.Id, Name: v.Name}
+		vals = append(vals, nt)
 		fmt.Printf("%s: %s\n", v.Id, v.Name)
 	}
 
-	utils.Encode(w, r, http.StatusOK, values)
+	utils.Encode(w, r, http.StatusOK, vals)
 }
 
 func createTask(w http.ResponseWriter, r *http.Request) {
-	p := db.Todo{Name: "Test", Status: db.NotStarted}
-	err := utils.Encode(w, r, int(http.StatusOK), p)
+	t, err := utils.Decode[Task](r)
 	if err != nil {
-		panic("Nope")
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	query := fmt.Sprintf("INSERT INTO public.tasks (name) VALUES ('%s') RETURNING id", t.Name)
+	var retId pgtype.UUID
+
+	err = database.QueryDatabase(context.Background(), query, &retId)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error executing query: %v\n", err)
+		w.WriteHeader(http.StatusNotAcceptable)
+	}
+
+	err = utils.Encode(w, r, int(http.StatusCreated), RetTask{Id: retId, Name: t.Name})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error encoding: %v\n", err)
+		w.WriteHeader(http.StatusNotAcceptable)
 	}
 }
 

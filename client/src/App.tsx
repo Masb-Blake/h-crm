@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ModeToggle } from './components/mode-toggle';
+import HeroSection from './components/landing/Hero';
+import Landing from './pages/Landing';
 
 function App() {
     return (
@@ -10,7 +12,7 @@ function App() {
             <ModeToggle />
             <Router>
                 <Routes>
-                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/" element={<Landing />} />
                 </Routes>
             </Router>
         </ThemeProvider>

@@ -9,7 +9,6 @@ import Landing from './pages/Landing';
 function App() {
     return (
         <ThemeProvider storageKey='vite-ui-theme'>
-            <ModeToggle />
             <Router>
                 <Routes>
                     <Route path="/" element={<Landing />} />

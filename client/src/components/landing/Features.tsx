@@ -1,6 +1,5 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
-import FeatureCard from "./FeatureCard"
+import FeatureCard from "./components/FeatureCard"
 import { Featureinfo } from "@/lib/types/featurecard"
 export default function FeaturesSection() {
 

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Testimonial } from "@/lib/types/testimonials"
-import TestimonialCard from "./TestimonialCard"
+import TestimonialCard from "./components/TestimonialCard"
 
 export default function Testimonials() {
 
@@ -42,7 +42,6 @@ export default function Testimonials() {
             </div>
             <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 md:grid-cols-2 lg:grid-cols-3">
                 {monials.map(t => <TestimonialCard testimonial={t} />)}
-
             </div>
         </div>
     )

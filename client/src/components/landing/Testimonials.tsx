@@ -12,7 +12,19 @@ export default function Testimonials() {
             description: 'Freelance Designer',
             testimonial: 'This platform has completely transformed how I manage my freelance business. The task management and client organization features are game-changers.',
             profile: 'https://github.com/shadcn.png'
+        },
+        {
+            name: 'Michael Chen',
+            description: 'E-commerce Entrepreneur',
+            testimonial: 'The analytics dashboard gives me insights I never had before. I can now make data-driven decisions for my business with confidence.',
+            profile: 'https://github.com/shadcn.png'
+        },
 
+        {
+            name: 'Jessica Martinez',
+            description: 'Socail Media Consultant',
+            testimonial: 'The automated reminders have saved me countless hours and helped me maintain strong relationships with my clients. I couldn\'t run my business without it.',
+            profile: 'https://github.com/shadcn.png'
         }
     ]
 
@@ -30,47 +42,7 @@ export default function Testimonials() {
             </div>
             <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 md:grid-cols-2 lg:grid-cols-3">
                 {monials.map(t => <TestimonialCard testimonial={t} />)}
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-4">
-                            <Avatar>
-                                <AvatarImage src="https://github.com/shadcn.png" />
-                                <AvatarFallback>CN</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <CardTitle className="text-lg">Michael Chen</CardTitle>
-                                <CardDescription>E-commerce Entrepreneur</CardDescription>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">
-                            "The analytics dashboard gives me insights I never had before. I can now make data-driven decisions
-                            for my business with confidence."
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card className="md:col-span-2 lg:col-span-1">
-                    <CardHeader>
-                        <div className="flex items-center gap-4">
-                            <Avatar>
-                                <AvatarImage src="https://github.com/shadcn.png" />
-                                <AvatarFallback>CN</AvatarFallback>
-                            </Avatar>
 
-                            <div>
-                                <CardTitle className="text-lg">Jessica Martinez</CardTitle>
-                                <CardDescription>Social Media Consultant</CardDescription>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">
-                            "The automated reminders have saved me countless hours and helped me maintain strong relationships
-                            with my clients. I couldn't run my business without it."
-                        </p>
-                    </CardContent>
-                </Card>
             </div>
         </div>
     )
